@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		
+		<meta charset="ISO-8859-1">
+		
+		<title>Scheduler Config</title>
+		
+		<link href="css/bootstrap-table.min.css" rel="stylesheet">
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		
+		<script type="text/javascript" src="js/jquery.min.js" ></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap-table.min.js"></script>
+		
+		<style>
+			tr td {
+			  	padding: 0.5em !important;
+			  	margin: 0.5em !important;
+			}
+			th {
+				padding: 0 !important;
+			  	margin: 0 !important;
+			    background-color: #8e1320;
+			    color: white;
+			} 
+		</style>
+
+	</head>
+	<body style="margin-top: 20px">
+	
+		<div class="row small">
+			<div class="col-md-9 col-md-offset-1" id="schedulerForm">
+				<div class="row">
+					<input type="hidden" name="id" />
+					<div class="form-group">
+				    	<label class="col-md-2" for="name">Scheduler Name</label>
+				    	<div class="col-md-4"><input type="text" class="form-control input-sm" name="name" id="name" placeholder="name"></div>
+				  	</div>
+			  	</div>
+			  	<div class="row">
+				  	<div class="form-group">
+				    	<label class="col-md-2" for="cronExpression">Cron Expression</label>
+				    	<div class="col-md-4">
+				    		<input type="text" class="form-control input-sm" name="cronExpression" id="cronExpression" placeholder="Expression">
+				    	</div>
+				  	</div>
+				</div>
+				<div class="row">
+				  	<div class="form-group">
+				    	<label class="col-md-2" for="serviceClass">Job Class</label>
+				    	<div class="col-md-4"><input type="text" class="form-control input-sm" name="jobClass" id="serviceClass" placeholder="class"></div>
+				  	</div>
+				</div>
+			  	<button type="button" onclick="submit();return false;" class="btn-xs btn-default">Submit</button>
+			</div>
+		</div>
+		<div class="row small ">
+			<hr/>
+			<div class="col-md-9 col-md-offset-1">
+				<table style="width: 100%"
+					   id="schedulerTable"
+					   data-toggle="table"
+				       data-url="list"
+				       data-method="post"
+				       data-pagination="true"
+				       data-side-pagination="server"
+				       data-response-handler="responseHandler">
+			    <thead>
+			    <tr>
+			        <th data-field="state" data-checkbox="true"></th>
+			        <th data-field="id" data-halign="center" data-align="center" data-sortable="false">ID</th>
+			        <th data-field="name" data-halign="center"  data-align="left" data-sortable="false">Name</th>
+			        <th data-field="cronHumanExpression" data-halign="center"  data-align="left" data-sortable="false">Cron</th>
+			        <th data-field="jobClass"  data-halign="center" data-align="left" data-sortable="false">Job Class</th>
+			        <th data-field="active" data-halign="center"  data-align="center" data-sortable="false">Active</th>
+			        <th data-field="action" data-halign="center"  data-align="center" data-sortable="false" data-formatter="actionFormatter" >Action</th>
+			    </tr>
+			    </thead>
+			</table>
+			</div>
+		</div>
+	
+	</body>
+	
+		<script type="text/javascript">
+		
+			function submit() {
+				var data = {};
+				
+				$("#schedulerForm :input")
+					.serializeArray()
+					.map( function(x) {
+						data[x.name] = x.value;
+					});
+				
+				$.ajax({
+					  method: "POST",
+					  url: "create",
+					  contentType : "application/json",
+					  data: JSON.stringify(data)
+				}).done( function( msg ) {
+					$("#schedulerForm :input").each( function() { $(this).val(""); });
+				    $("#schedulerTable").bootstrapTable('refresh');
+				});
+				
+			}
+		
+			function responseHandler(data) {
+				if( data.data != null && data.data.total != null)
+					return data.data;
+				else
+					return {"rows":[],"total" : 0};
+			}
+			
+			function actionFormatter( value, row ,index ) {
+				
+				var action = ( row.active === true ) ?
+						'<button onclick="stop('+ row.id +')" type="button" class="btn-xs btn-danger">Stop</button>' :
+						'<button onclick="start('+ row.id +')" type="button" class="btn-xs btn-success">Start</button>';
+				
+				var edit = "<button onclick='edit("+ JSON.stringify(row) +")' type='button' class='btn-xs btn-primary'>Edit</button>";
+				var del = '<button onclick="del('+ row.id +')" type="button" class="btn-xs btn-danger">Delete</button>'
+						
+				return  action + '&nbsp' + edit + '&nbsp' + del; 
+				
+			}
+			
+			function del( id ) {
+				$.ajax({
+					  method: "GET",
+					  url: "delete/" + id
+				}).done( function( msg ) {
+				    $("#schedulerTable").bootstrapTable('refresh');
+				});
+			}
+			
+			function edit( row ) {
+				$.each(row, function(key, value) {
+				    $('#schedulerForm [name='+key+']').val(value);
+				});
+			}
+			
+			function start( id ) {
+				$.ajax({
+					  method: "GET",
+					  url: "start/" + id
+				}).done( function( msg ) {
+				    $("#schedulerTable").bootstrapTable('refresh');
+				});
+			}
+			
+			function stop( id ) {
+				$.ajax({
+					  method: "GET",
+					  url: "stop/" + id
+				}).done( function( msg ) {
+				    $("#schedulerTable").bootstrapTable('refresh');
+				});
+			}
+		
+		</script>
+
+</html>
