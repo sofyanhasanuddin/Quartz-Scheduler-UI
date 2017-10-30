@@ -1,0 +1,1 @@
+INSERT INTO scheduler(id,name,cronexpression,jobclass) VALUES (1, 'Simple Cron Scheduler', '0 0/1 * 1/1 * ? *', 'com.app.sofyan.example.job.SampleJob');

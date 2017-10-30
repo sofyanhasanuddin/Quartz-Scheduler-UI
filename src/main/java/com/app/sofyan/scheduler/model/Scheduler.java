@@ -21,16 +21,16 @@ public class Scheduler implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column
+	@Column(name="id")
 	private Long id;
 	
-	@Column
+	@Column(name="name")
 	private String name;
 	
-	@Column
+	@Column(name="cronexpression")
 	private String cronExpression;
 	
-	@Column
+	@Column(name="jobclass")
 	private String jobClass;
 	
 	@Transient
